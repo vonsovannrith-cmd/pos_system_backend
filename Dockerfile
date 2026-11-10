@@ -7,6 +7,9 @@ COPY mvnw .
 COPY .mvn .mvn
 COPY pom.xml .
 
+# Give execution permission to mvnw (Fixes permission denied error)
+RUN chmod +x mvnw
+
 # Copy source code
 COPY src src
 
