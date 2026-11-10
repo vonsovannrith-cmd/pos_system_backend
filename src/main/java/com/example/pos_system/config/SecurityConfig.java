@@ -68,7 +68,8 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList(
                 "https://pos-system-website-tau.vercel.app",
-                "https://pos-system-website-4f3jbciuw-vonsovannrith-8230s-projects.vercel.app"
+                "https://pos-system-website-4f3jbciuw-vonsovannrith-8230s-projects.vercel.app",
+                "https://pos-system-website-lxu9sh8u9-vonsovannrith-8230s-projects.vercel.app"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
