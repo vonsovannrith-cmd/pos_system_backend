@@ -49,7 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
         }catch (JwtException | IllegalArgumentException | UsernameNotFoundException e) {
-            // Invalid token -> continue without login (Security reply 401)
+            System.out.println("JWT Authentication Failed: " + e.getMessage());  // Invalid token -> continue without login (Security reply 401)
         }
         filterChain.doFilter(request, response);
     }
