@@ -9,6 +9,7 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.util.Map;
 
@@ -59,5 +60,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleUnreadable(HttpMessageNotReadableException ex) {
         return ResponseEntity.badRequest()
                 .body(Map.of("message", "The data sent is invalid (JSON or Enum value is incorrect)."));
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<Map<String, String>> handleTooLarge(MaxUploadSizeExceededException ex) {
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+                .body(Map.of("message", "File too large (maximum 5 MB)"));
     }
 }

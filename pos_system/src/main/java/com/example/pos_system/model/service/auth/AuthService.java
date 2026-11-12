@@ -2,6 +2,7 @@ package com.example.pos_system.model.service.auth;
 
 import com.example.pos_system.common.BusinessException;
 import com.example.pos_system.dto.auth.ChangePasswordRequest;
+import com.example.pos_system.dto.auth.LoginResult;
 import com.example.pos_system.dto.request.LoginRequest;
 import com.example.pos_system.dto.response.AuthResponse;
 import com.example.pos_system.dto.response.UserResponse;
@@ -31,7 +32,7 @@ public class AuthService {
     private final LoginAttemptService loginAttemptService;
 
     // login method
-    public AuthResponse login(LoginRequest request, String clientIp) {
+    public LoginResult login(LoginRequest request, String clientIp) {
         String email = request.email().trim().toLowerCase();
         String key = clientIp + "|" + email;
 
@@ -51,8 +52,11 @@ public class AuthService {
         User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
 
         String token = jwtService.generateToken(userDetails);
-        return new AuthResponse(token, "Bearer",
-                user.getFullName(), user.getEmail(), user.getRole().name());
+        return new LoginResult(
+                token,
+                user.getFullName(),
+                user.getEmail(),
+                user.getRole().name());
     }
 
     // information me

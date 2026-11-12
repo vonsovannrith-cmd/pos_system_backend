@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "products")
@@ -39,8 +40,11 @@ public class Product {
     @Column(name = "low_stock_threshold", nullable = false)
     private int lowStockThreshold = 5;
 
-    @Column(name = "image_url", length = 255)
-    private String imageUrl;
+//    @Column(name = "image_url", length = 255)
+//    private String imageUrl;
+
+    @Column(name = "image_id")
+    private UUID imageId;
 
     @Column(nullable = false)
     private boolean active = true;

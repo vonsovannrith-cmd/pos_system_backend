@@ -15,6 +15,7 @@ public record ProductResponse(
         boolean lowStock,
         boolean active,
         Long categoryId,
-        String categoryName
+        String categoryName,
+        String imageUrl
 ) {
 }

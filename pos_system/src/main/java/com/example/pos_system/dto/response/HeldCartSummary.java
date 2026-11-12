@@ -1,4 +1,4 @@
-package com.example.pos_system.dto;
+package com.example.pos_system.dto.response;
 
 import java.time.LocalDateTime;
 

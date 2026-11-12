@@ -1,8 +1,8 @@
 package com.example.pos_system.controller;
 
-import com.example.pos_system.dto.HeldCartResponse;
-import com.example.pos_system.dto.HeldCartSummary;
-import com.example.pos_system.dto.HoldCartRequest;
+import com.example.pos_system.dto.response.HeldCartResponse;
+import com.example.pos_system.dto.response.HeldCartSummary;
+import com.example.pos_system.dto.request.HoldCartRequest;
 import com.example.pos_system.model.service.HeldCartService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

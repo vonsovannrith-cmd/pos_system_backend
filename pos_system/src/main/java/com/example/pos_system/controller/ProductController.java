@@ -9,8 +9,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -59,5 +61,17 @@ public class ProductController {
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ProductResponse setActive(@PathVariable Long id, @RequestParam boolean value) {
         return productService.setActive(id, value);
+    }
+
+    @PostMapping(value = "/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    public ProductResponse uploadImage(@PathVariable Long id, @RequestParam("file")MultipartFile file) {
+        return productService.uploadImage(id, file);
+    }
+
+    @DeleteMapping("/{id}/image")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    public ProductResponse removeImage(@PathVariable Long id) {
+        return productService.removeImage(id);
     }
 }

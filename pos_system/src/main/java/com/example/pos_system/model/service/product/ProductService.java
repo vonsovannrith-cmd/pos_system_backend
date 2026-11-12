@@ -7,8 +7,10 @@ import com.example.pos_system.dto.response.PageResponse;
 import com.example.pos_system.dto.response.ProductResponse;
 import com.example.pos_system.model.entity.Category;
 import com.example.pos_system.model.entity.Product;
+import com.example.pos_system.model.entity.ProductImage;
 import com.example.pos_system.model.repository.category.CategoryRepository;
 import com.example.pos_system.model.repository.product.ProductRepository;
+import com.example.pos_system.model.service.ImageService;
 import com.example.pos_system.model.service.setting.SettingsService;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
@@ -17,10 +19,12 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +33,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final SettingsService settingsService;
+    private final ImageService imageService;
 
     // Dynamic search
     @Transactional(readOnly = true)
@@ -98,6 +103,29 @@ public class ProductService {
     public ProductResponse setActive(Long id, boolean active) {
         Product product = find(id);
         product.setActive(active);
+        return toResponse(product);
+    }
+
+    @Transactional
+    public ProductResponse uploadImage(Long id, MultipartFile file) {
+        Product product = find(id);     // Check existing stock
+        ProductImage image = imageService.store(file);  // // Review + Compress + Save
+        UUID oldId = product.getImageId();
+        product.setImageId(image.getId());
+        if (oldId != null) {
+            imageService.delete(oldId);     // Delete old image (do not leave orphans)
+        }
+        return toResponse(product);
+    }
+
+    @Transactional
+    public ProductResponse removeImage(Long id) {
+        Product product = find(id);
+        UUID oldId = product.getImageId();
+        if (oldId == null) {
+            product.setImageId(null);
+            imageService.delete(oldId);
+        }
         return toResponse(product);
     }
 
@@ -183,7 +211,8 @@ public class ProductService {
                 p.getStockQuantity() <= p.getLowStockThreshold(),
                 p.isActive(),
                 c != null ? c.getId() : null,
-                c != null ? c.getName() : null
+                c != null ? c.getName() : null,
+                p.getImageId() != null ? "/api/images/" + p.getImageId() : null
         );
 
     }

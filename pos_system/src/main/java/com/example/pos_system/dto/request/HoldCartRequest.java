@@ -1,6 +1,5 @@
-package com.example.pos_system.dto;
+package com.example.pos_system.dto.request;
 
-import com.example.pos_system.dto.request.CheckoutItemRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;

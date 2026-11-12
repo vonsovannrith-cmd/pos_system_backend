@@ -2,10 +2,10 @@ package com.example.pos_system.model.service;
 
 import com.example.pos_system.common.BusinessException;
 import com.example.pos_system.common.ResourceNotFoundException;
-import com.example.pos_system.dto.HeldCartResponse;
-import com.example.pos_system.dto.HeldCartSummary;
-import com.example.pos_system.dto.HeldItemResponse;
-import com.example.pos_system.dto.HoldCartRequest;
+import com.example.pos_system.dto.response.HeldCartResponse;
+import com.example.pos_system.dto.response.HeldCartSummary;
+import com.example.pos_system.dto.response.HeldItemResponse;
+import com.example.pos_system.dto.request.HoldCartRequest;
 import com.example.pos_system.dto.request.CheckoutItemRequest;
 import com.example.pos_system.model.entity.HeldCart;
 import com.example.pos_system.model.entity.HeldItem;

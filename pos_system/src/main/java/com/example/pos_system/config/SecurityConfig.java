@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
@@ -18,6 +19,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -35,17 +38,36 @@ public class SecurityConfig {
     @Value("${app.cors.allowed-origins}")
     private List<String> allowedOrigins;
 
+    @Value("${app.auth.cookie-secure:false}")
+    private boolean cookieSecure;
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
+        CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+        csrfTokenRepository.setCookiePath("/");     // JS on all pages (/dashboard...) must be readable
+        csrfTokenRepository.setCookieCustomizer(c -> c.sameSite("Lax").secure(cookieSecure));
+
+        // Requests containing "Authorization: Bearer" do not use cookies → they are not susceptible to CSRF attacks.
+        // (Other websites cannot set this header without CORS permission)
+        RequestMatcher bearerHeader = request -> {
+            String h = request.getHeader("Authorization");
+            return h != null && h.startsWith("Bearer ");
+        };
+
         http
-                .csrf(AbstractHttpConfigurer::disable)
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(csrfTokenRepository)
+                        .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
+                )
                 .cors(Customizer.withDefaults())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/health", "/api/auth/login").permitAll()
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers("/api/users/**").hasRole("ADMIN")
-                        .anyRequest().authenticated())
+                        .requestMatchers("/api/health", "/api/auth/login", "/api/auth/logout", "/api/auth/csrf").permitAll()       // Public endpoints
+                        .requestMatchers(HttpMethod.GET, "/api/images/**").permitAll()  // Public images
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()      // Swagger
+                        .requestMatchers("/api/users/**").hasRole("ADMIN")   // Admin only
+                        .anyRequest().authenticated())  // Other endpoints require authentication
                 .exceptionHandling(e -> e
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
@@ -66,17 +88,14 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:3000",
-                "https://pos-system-website-tau.vercel.app",
-                "https://pos-system-website-4f3jbciuw-vonsovannrith-8230s-projects.vercel.app",
-                "https://pos-system-website-lxu9sh8u9-vonsovannrith-8230s-projects.vercel.app",
-                "https://pos-system-website-2sl9tz39d-vonsovannrith-8230s-projects.vercel.app"
-        ));
+        configuration.setAllowedOrigins(allowedOrigins);
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowedHeaders(List.of(
+                "Authorization",
+                "Content-Type",
+                "X-XSRF-TOKEN"
+        ));
         configuration.setAllowCredentials(true);
-
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
